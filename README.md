@@ -151,7 +151,7 @@ El directorio `plantillas` contiene plantillas para el año 2016 pre-armadas en 
 ### Para ejecutar mkcal
 
 1. [GNU Bash](https://www.gnu.org/software/bash/), el shell por omosión en la mayoría de las distribuciones GNU/Linux y en Mac OS X.
-2. [ImageMagick]{http://imagemagick.org), que se puede instalar usando el gestor de paquetes de la distribución GNU/Linux que estés usando; o con [Homebrew](http://brew.sh/) en Max OS X.
+2. [ImageMagick](http://imagemagick.org), que se puede instalar usando el gestor de paquetes de la distribución GNU/Linux que estés usando; o con [Homebrew](http://brew.sh/) en Max OS X.
 
 ### Para editar las plantillas
 
