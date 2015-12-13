@@ -1,0 +1,211 @@
+#!/bin/bash
+
+# Proporción tapa:         H/W = 1.41
+# Proporción horizontal:   W/H = 1.65
+# Proporción vertical:     H/W = 2.42
+# Proporción imagen menor: H/W = 1.21
+
+function buscar_fotos()
+{
+	fotos=($(ls ./*.jpg ./*.JPG ./*.png ./*.gif 2>/dev/null))
+	cfotos=${#fotos[@]}
+
+	for (( i=0; i < cfotos; i++ ))
+	do
+		foto=${fotos[$i]}
+
+		if [ "${foto: -4}" != ".png" ]; then
+			nombre="${foto%.*}"
+			echo Convirtiendo "$dir/$foto" a "$dir/$nombre.png"
+			convert "$foto" "$nombre.png"
+			rm "$foto" 2>/dev/null
+			fotos[$i]=$nombre.png
+			foto=$nombre.png
+		fi
+	done
+}
+
+function vertical()
+{
+	echo Mes "$mes": Formato vertical en "$dir" para "$cfotos" fotos.
+	case "$cfotos" in
+		0)
+			echo "    No hay fotos."
+			;;
+		1)
+			echo "    Una: ${fotos[0]}"
+			cp "${fotos[0]}" "$target"
+			;;
+		2)
+			echo "    Izquierda:  ${fotos[0]}"
+			echo "    Derecha:    ${fotos[1]}"
+			convert -size "$TAMFOTO" "$FONDO" \
+					\( "${fotos[0]}" -resize 2119x1284 \) -geometry +0+0   -composite \
+					\( "${fotos[1]}" -resize 2119x1284 \) -geometry +0+1284  -composite \
+					"$target"
+			;;
+		3)
+			echo "    Foto grande:  ${fotos[0]}"
+			echo "    Foto chica 1: ${fotos[1]}"
+			echo "    Foto chica 2: ${fotos[2]}"
+			convert -size "$TAMFOTO" "$FONDO" \
+					\( "${fotos[0]}" -resize 1059x2568 \) -geometry +0+0   -composite \
+					\( "${fotos[1]}" -resize 1060x1284 \) -geometry +1059+0  -composite \
+					\( "${fotos[2]}" -resize 1060x1284 \) -geometry +1059+1284  -composite \
+					"$target"
+			;;
+		*)
+			echo "    Foto arriba izq:  ${fotos[0]}"
+			echo "    Foto arriba der: ${fotos[1]}"
+			echo "    Foto abajo  izq: ${fotos[2]}"
+			echo "    Foto abajo  der: ${fotos[3]}"
+			convert -size "$TAMFOTO" "$FONDO" \
+					\( "${fotos[0]}" -resize 1060x1284 \) -geometry +0+0   -composite \
+					\( "${fotos[1]}" -resize 1060x1284 \) -geometry +1059+0  -composite \
+					\( "${fotos[2]}" -resize 1060x1284 \) -geometry +0+1284  -composite \
+					\( "${fotos[3]}" -resize 1060x1284 \) -geometry +1059+1284  -composite \
+					"$target"
+			;;
+	esac
+}
+
+function horizontal()
+{
+	echo Mes "$mes": Formato horizontal en "$dir" para "$cfotos" fotos.
+	case "$cfotos" in
+		0)
+			echo "    No hay fotos."
+			;;
+		1)
+			echo "    Una: ${fotos[0]}"
+			cp "${fotos[0]}" "$target"
+			;;
+		2)
+			echo "    Izquierda:  ${fotos[0]}"
+			echo "    Derecha:    ${fotos[1]}"
+			convert -size "$TAMFOTO" "$FONDO" \
+					\( "${fotos[0]}" -resize 1059x2568 \) -geometry +0+0   -composite \
+					\( "${fotos[1]}" -resize 1060x2568 \) -geometry +1059+0  -composite \
+					"$target"
+			;;
+		3)
+			echo "    Foto grande:  ${fotos[0]}"
+			echo "    Foto chica 1: ${fotos[1]}"
+			echo "    Foto chica 2: ${fotos[2]}"
+			convert -size "$TAMFOTO" "$FONDO" \
+					\( "${fotos[0]}" -resize 2119x1284 \) -geometry +0+0   -composite \
+					\( "${fotos[1]}" -resize 1059x1284 \) -geometry +0+1284  -composite \
+					\( "${fotos[2]}" -resize 1060x1284 \) -geometry +1059+1284  -composite \
+					"$target"
+			;;
+		*)
+			echo "    Foto arriba izq:  ${fotos[0]}"
+			echo "    Foto arriba der: ${fotos[1]}"
+			echo "    Foto abajo  izq: ${fotos[2]}"
+			echo "    Foto abajo  der: ${fotos[3]}"
+			convert -size "$TAMFOTO" "$FONDO" \
+					\( "${fotos[0]}" -resize 1060x1284 \) -geometry +0+0   -composite \
+					\( "${fotos[1]}" -resize 1060x1284 \) -geometry +1059+0  -composite \
+					\( "${fotos[2]}" -resize 1060x1284 \) -geometry +0+1284  -composite \
+					\( "${fotos[3]}" -resize 1060x1284 \) -geometry +1059+1284  -composite \
+					"$target"
+			;;
+	esac
+}
+
+function procesar_mes()
+{
+	if (( "$mes" < "10" )); then
+		smes=0$mes
+	else
+		smes=$mes
+	fi
+
+	dir=$(find . -maxdepth 1 -type d -print | grep -E ''0?$smes[HhVv]\?'' | tail -1)
+
+	if [[ -d $dir ]]; then
+		dest=$(pwd)
+		target=$dest/fotomes$mes.png
+		pushd "$dir" > /dev/null
+		buscar_fotos
+		if echo "$dir" | grep -qE '''[Hh]$'''
+		then
+			horizontal
+		else
+			vertical
+		fi
+		popd > /dev/null
+		if [[ -e "fotomes$mes.png" ]]; then
+			convert "$PAGINAS/$smes.png" \( "fotomes$mes.png" -resize "$TAMFOTO" \) -geometry +0+0 -composite "pag$smes.png"
+			rm "fotomes$mes.png" 2>/dev/null
+			pagina[$mes]=pag$smes.png
+		fi
+	else
+		echo Mes "$mes": ADVERTENCIA: Directorio no encontrado.
+	fi
+}
+
+function procesar_tapa()
+{
+	tapa=$(find . -iname 'tapa*.jpg' -or -iname 'tapa*.JPG' -or -iname 'tapa*.png' -or -iname 'tapa*.gif' | tail -1)
+
+	if [ -n "$tapa" ]; then
+		if [ -f "$tapa" ]; then
+			if [ "${tapa: -4}" != ".png" ]; then
+				nombre="${tapa%.*}"
+				echo Convirtiendo "$tapa" a "$nombre.png"
+				convert "$tapa" "$nombre.png"
+				rm "$tapa" 2>/dev/null
+				tapa="$nombre.png"
+			fi
+			echo Usando "$tapa" como tapa del calendario...
+			convert "$tapa" -resize 2480x3508 "$tapa"
+		else
+			echo "$tapa" no es un archivo valido para la tapa.
+			unset tapa
+		fi
+	else
+		echo Tapa no encontrada.
+		unset tapa
+	fi
+}
+
+if [ -z "$1" ]; then
+	echo Uso: "$0" dir
+	exit 1
+fi
+
+if [ -d "$1" ]; then
+	echo Creando calendario para "$1"...
+else
+	echo "$1" no es un directorio valido.
+	exit 2
+fi
+
+pushd "$1" > /dev/null
+
+ANCHO=2119
+ALTO=2568
+TAMFOTO="$ANCHO"x"$ALTO"
+FONDO="xc:black"
+PAGINAS=./plantillas
+
+procesar_tapa
+
+for (( mes=1; mes <= 12; mes++ ))
+do
+	procesar_mes
+done
+
+echo "Compaginando ${#pagina[@]} paginas..."
+if [[ -e "$tapa" ]]; then
+	convert "$tapa" "${pagina[@]}" -page A4 -quality 100 "calendario_$1.pdf"
+else
+	convert "${pagina[@]}" -page A4 -quality 100 "calendario_$1.pdf"
+fi
+rm "${pagina[@]}" 2>/dev/null
+
+popd > /dev/null
+
+exit 0
+
