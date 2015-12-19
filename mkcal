@@ -7,14 +7,14 @@
 
 function buscar_fotos()
 {
-	fotos=($(ls ./*.jpg ./*.JPG ./*.png ./*.gif 2>/dev/null))
+	fotos=($(ls ./*.jpg ./*.JPG ./*.png ./*.PNG ./*.gif ./*.GIF 2>/dev/null))
 	cfotos=${#fotos[@]}
 
 	for (( i=0; i < cfotos; i++ ))
 	do
 		foto=${fotos[$i]}
 
-		if [ "${foto: -4}" != ".png" ]; then
+		if [ "${foto: -4}" != ".png" ] && [ "${foto: -4}" != ".PNG" ]; then
 			nombre="${foto%.*}"
 			echo Convirtiendo "$dir/$foto" a "$dir/$nombre.png"
 			convert "$foto" "$nombre.png"
