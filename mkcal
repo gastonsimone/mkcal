@@ -5,6 +5,12 @@
 # Proporción vertical:     H/W = 2.42
 # Proporción imagen menor: H/W = 1.21
 
+ancho=2119
+alto=2568
+tamfoto="$ancho"x"$alto"
+fondo="xc:black"
+paginas=plantillas
+
 function buscar_fotos()
 {
 	fotos=($(ls ./*.jpg ./*.JPG ./*.png ./*.PNG ./*.gif ./*.GIF 2>/dev/null))
@@ -39,7 +45,7 @@ function vertical()
 		2)
 			echo "    Izquierda:  ${fotos[0]}"
 			echo "    Derecha:    ${fotos[1]}"
-			convert -size "$TAMFOTO" "$FONDO" \
+			convert -size "$tamfoto" "$fondo" \
 					\( "${fotos[0]}" -resize 2119x1284 \) -geometry +0+0   -composite \
 					\( "${fotos[1]}" -resize 2119x1284 \) -geometry +0+1284  -composite \
 					"$target"
@@ -48,7 +54,7 @@ function vertical()
 			echo "    Foto grande:  ${fotos[0]}"
 			echo "    Foto chica 1: ${fotos[1]}"
 			echo "    Foto chica 2: ${fotos[2]}"
-			convert -size "$TAMFOTO" "$FONDO" \
+			convert -size "$tamfoto" "$fondo" \
 					\( "${fotos[0]}" -resize 1059x2568 \) -geometry +0+0   -composite \
 					\( "${fotos[1]}" -resize 1060x1284 \) -geometry +1059+0  -composite \
 					\( "${fotos[2]}" -resize 1060x1284 \) -geometry +1059+1284  -composite \
@@ -59,7 +65,7 @@ function vertical()
 			echo "    Foto arriba der: ${fotos[1]}"
 			echo "    Foto abajo  izq: ${fotos[2]}"
 			echo "    Foto abajo  der: ${fotos[3]}"
-			convert -size "$TAMFOTO" "$FONDO" \
+			convert -size "$tamfoto" "$fondo" \
 					\( "${fotos[0]}" -resize 1060x1284 \) -geometry +0+0   -composite \
 					\( "${fotos[1]}" -resize 1060x1284 \) -geometry +1059+0  -composite \
 					\( "${fotos[2]}" -resize 1060x1284 \) -geometry +0+1284  -composite \
@@ -83,7 +89,7 @@ function horizontal()
 		2)
 			echo "    Izquierda:  ${fotos[0]}"
 			echo "    Derecha:    ${fotos[1]}"
-			convert -size "$TAMFOTO" "$FONDO" \
+			convert -size "$tamfoto" "$fondo" \
 					\( "${fotos[0]}" -resize 1059x2568 \) -geometry +0+0   -composite \
 					\( "${fotos[1]}" -resize 1060x2568 \) -geometry +1059+0  -composite \
 					"$target"
@@ -92,7 +98,7 @@ function horizontal()
 			echo "    Foto grande:  ${fotos[0]}"
 			echo "    Foto chica 1: ${fotos[1]}"
 			echo "    Foto chica 2: ${fotos[2]}"
-			convert -size "$TAMFOTO" "$FONDO" \
+			convert -size "$tamfoto" "$fondo" \
 					\( "${fotos[0]}" -resize 2119x1284 \) -geometry +0+0   -composite \
 					\( "${fotos[1]}" -resize 1059x1284 \) -geometry +0+1284  -composite \
 					\( "${fotos[2]}" -resize 1060x1284 \) -geometry +1059+1284  -composite \
@@ -103,7 +109,7 @@ function horizontal()
 			echo "    Foto arriba der: ${fotos[1]}"
 			echo "    Foto abajo  izq: ${fotos[2]}"
 			echo "    Foto abajo  der: ${fotos[3]}"
-			convert -size "$TAMFOTO" "$FONDO" \
+			convert -size "$tamfoto" "$fondo" \
 					\( "${fotos[0]}" -resize 1060x1284 \) -geometry +0+0   -composite \
 					\( "${fotos[1]}" -resize 1060x1284 \) -geometry +1059+0  -composite \
 					\( "${fotos[2]}" -resize 1060x1284 \) -geometry +0+1284  -composite \
@@ -121,7 +127,7 @@ function procesar_mes()
 		smes=$mes
 	fi
 
-	dir=$(find . -maxdepth 1 -type d -print | grep -E ''0?$smes[HhVv]\?'' | tail -1)
+	dir=$(find . -maxdepth 1 -type d -print | grep -E "$smes"'[HhVv]?' | head -1)
 
 	if [[ -d $dir ]]; then
 		dest=$(pwd)
@@ -136,7 +142,7 @@ function procesar_mes()
 		fi
 		popd > /dev/null
 		if [[ -e "fotomes$mes.png" ]]; then
-			convert "$PAGINAS/$smes.png" \( "fotomes$mes.png" -resize "$TAMFOTO" \) -geometry +0+0 -composite "pag$smes.png"
+			convert "$paginas/$smes.png" \( "fotomes$mes.png" -resize "$tamfoto" \) -geometry +0+0 -composite "pag$smes.png"
 			rm "fotomes$mes.png" 2>/dev/null
 			pagina[$mes]=pag$smes.png
 		fi
@@ -170,42 +176,73 @@ function procesar_tapa()
 	fi
 }
 
+function ayuda()
+{
+	echo Usos: "$0" dir
+	echo "		$0" -c dir
+}
+
+function crear_calendario()
+{
+	if [ -d "$proyecto" ]; then
+		echo Creando calendario para "$proyecto"...
+	else
+		echo "$proyecto" no es un directorio valido.
+		exit 2
+	fi
+
+	pushd "$proyecto" > /dev/null
+
+	procesar_tapa
+
+	for (( mes=1; mes <= 12; mes++ ))
+	do
+		procesar_mes
+	done
+
+	echo "Compaginando ${#pagina[@]} paginas..."
+	if [[ -e "$tapa" ]]; then
+		convert "$tapa" "${pagina[@]}" -page A4 -quality 100 "calendario_$proyecto.pdf"
+	else
+		convert "${pagina[@]}" -page A4 -quality 100 "calendario_$proyecto.pdf"
+	fi
+	rm "${pagina[@]}" 2>/dev/null
+
+	popd > /dev/null
+
+}
+
+function crear_proyecto()
+{
+	echo Creando proyecto "$nuevo"...
+	mkdir -p "$nuevo"
+	pushd "$nuevo" > /dev/null
+	for m in 01 02 03 04 05 06 07 08 09 10 11 12
+	do
+		mkdir "$m"
+	done
+	mkdir "$paginas"
+	popd > /dev/null
+	echo Hecho. Copie las plantillas en "$nuevo/$paginas"
+	echo y las fotos para cada mes en el subdirectorio correspondiente.
+}
+
 if [ -z "$1" ]; then
-	echo Uso: "$0" dir
+	ayuda
 	exit 1
 fi
 
-if [ -d "$1" ]; then
-	echo Creando calendario para "$1"...
-else
-	echo "$1" no es un directorio valido.
-	exit 2
-fi
-
-pushd "$1" > /dev/null
-
-ANCHO=2119
-ALTO=2568
-TAMFOTO="$ANCHO"x"$ALTO"
-FONDO="xc:black"
-PAGINAS=./plantillas
-
-procesar_tapa
-
-for (( mes=1; mes <= 12; mes++ ))
-do
-	procesar_mes
-done
-
-echo "Compaginando ${#pagina[@]} paginas..."
-if [[ -e "$tapa" ]]; then
-	convert "$tapa" "${pagina[@]}" -page A4 -quality 100 "calendario_$1.pdf"
-else
-	convert "${pagina[@]}" -page A4 -quality 100 "calendario_$1.pdf"
-fi
-rm "${pagina[@]}" 2>/dev/null
-
-popd > /dev/null
+clave="$1"
+case $clave in
+	-c|--crear)
+		nuevo="$2"
+		crear_proyecto
+		;;
+	*)
+		proyecto="$1"
+		crear_calendario
+	;;
+esac
 
 exit 0
 
