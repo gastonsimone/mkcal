@@ -13,13 +13,22 @@ El script `mkcal` genera un calendario en formato PDF con la siguiente estructur
 2. Una imagen de tapa (opcional).
 3. Un subdirectorio de plantillas.
 
-Una vez que se tiene el proyecto armado, sólo hay que ejecutar:
+Puede crear un nuevo proyecto vacío con el siguiente comando:
+
+```
+mkcal -c <proyecto>
+```
+
+Una vez que se tiene el proyecto armado, con todas las fotos ubicadas, sólo hay que ejecutar:
 
 ```
 mkcal <proyecto>
 ```
 
-donde `<proyecto>` es el nombre del directorio con el proyecto de calendario. Asegúrese de que `mkcal` es ubicado en un directorio incluido en la variable de entorno `PATH`.
+donde `<proyecto>` es el nombre del directorio con el proyecto de calendario.
+Este comando creará el archivo `<proyecto>/calendario_<proyecto>.pdf` con el resultado final.
+
+Asegúrese de que `mkcal` esté ubicado en un directorio incluido en la variable de entorno `PATH`.
 
 ## Cómo funciona
 
