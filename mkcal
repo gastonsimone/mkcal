@@ -5,6 +5,11 @@
 # Proporción vertical:     H/W = 2.42
 # Proporción imagen menor: H/W = 1.21
 
+if [ -z "$(which convert)" ]; then
+	echo Comando convert the ImageMagick no encontrado.
+	exit 2
+fi
+
 ancho=2119
 alto=2568
 tamfoto="$ancho"x"$alto"
@@ -23,10 +28,13 @@ function buscar_fotos()
 		if [ "${foto: -4}" != ".png" ] && [ "${foto: -4}" != ".PNG" ]; then
 			nombre="${foto%.*}"
 			echo Convirtiendo "$dir/$foto" a "$dir/$nombre.png"
-			convert "$foto" "$nombre.png"
-			rm "$foto" 2>/dev/null
-			fotos[$i]=$nombre.png
-			foto=$nombre.png
+			if convert "$foto" "$nombre.png"; then
+				rm "$foto" 2>/dev/null
+				fotos[$i]=$nombre.png
+				foto=$nombre.png
+			else
+				fotos[$i]=$foto
+			fi
 		fi
 	done
 }
@@ -142,9 +150,10 @@ function procesar_mes()
 		fi
 		popd > /dev/null
 		if [[ -e "fotomes$mes.png" ]]; then
-			convert "$paginas/$smes.png" \( "fotomes$mes.png" -resize "$tamfoto" \) -geometry +0+0 -composite "pag$smes.png"
+			if convert "$paginas/$smes.png" \( "fotomes$mes.png" -resize "$tamfoto" \) -geometry +0+0 -composite "pag$smes.png"; then
+				pagina[$mes]=pag$smes.png
+			fi
 			rm "fotomes$mes.png" 2>/dev/null
-			pagina[$mes]=pag$smes.png
 		fi
 	else
 		echo Mes "$mes": ADVERTENCIA: Directorio no encontrado.
@@ -160,9 +169,10 @@ function procesar_tapa()
 			if [ "${tapa: -4}" != ".png" ]; then
 				nombre="${tapa%.*}"
 				echo Convirtiendo "$tapa" a "$nombre.png"
-				convert "$tapa" "$nombre.png"
-				rm "$tapa" 2>/dev/null
-				tapa="$nombre.png"
+				if convert "$tapa" "$nombre.png"; then
+					rm "$tapa" 2>/dev/null
+					tapa="$nombre.png"
+				fi
 			fi
 			echo Usando "$tapa" como tapa del calendario...
 			convert "$tapa" -resize 2480x3508 "$tapa"
@@ -209,7 +219,6 @@ function crear_calendario()
 	rm "${pagina[@]}" 2>/dev/null
 
 	popd > /dev/null
-
 }
 
 function crear_proyecto()
