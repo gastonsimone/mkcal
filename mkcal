@@ -189,7 +189,7 @@ function procesar_tapa()
 function ayuda()
 {
 	echo Usos: "$0" dir
-	echo "		$0" -c dir
+	echo "      $0" -c dir
 }
 
 function crear_calendario()
