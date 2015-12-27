@@ -39,9 +39,13 @@ Asegúrese de que `mkcal` esté ubicado en un directorio incluido en la variable
 Para cada mes `mkcal` usará 1, 2, 3 o 4 imágenes, dependiendo de cuántas haya disponibles en el subdirectorio del mes.
 
 * Si hay una sola foto, ésta ocupará todo el espacio disponible para imágenes.
-* Si has dos fotos, éstas se colocarán una bajo la otra o una al lado de la otra, dependiendo si se eligió disposición horizontal o vertical para este mes (ver siguiente sección).
+* Si has dos fotos, éstas se colocarán una al lado de la otra o una bajo la otra, dependiendo si se eligió disposición horizontal o vertical para este mes (ver siguiente sección).
 * Si hay tres fotos, la primera (en orden alfabético) será la principal, y las siguientes dos las menores. La principal ocupará toda la sección superior o izquierda, dependiendo de qué disposición se haya elegido: horizontal o vertical.
 * Si hay cuatro fotos, las mismas se dispondrán en una grilla de 2x2 en el lugar disponible.
+
+#### Horizontal vs. vertical
+
+Los términos horizontal y vertical refieren a la disposición de las imágenes, no a la apariencia de las mismas. En otras palabras, la disposición horizontal refiere a que las imágenes son colocadas una al lado de la siguiente, formando una fila horizontal; mientras que en la disposición vertical las imágenes son colocadas una sobre la siguiente, formando una columna vertical.
 
 #### Una imagen
 
@@ -66,17 +70,17 @@ Para cada mes `mkcal` usará 1, 2, 3 o 4 imágenes, dependiendo de cuántas haya
 ```
        Vertical               Horizontal
 +-------------------+    +-------------------+
-|         |         |    |                   |
-|         |         |    |                   |
-|         |         |    |         1         |
-|         |         |    |                   |
-|         |         |    |                   |
-|    1    |    2    |    +-------------------+
-|         |         |    |                   |
-|         |         |    |                   |
-|         |         |    |         2         |
-|         |         |    |                   |
-|         |         |    |                   |
+|                   |    |         |         |
+|                   |    |         |         |
+|         1         |    |         |         |
+|                   |    |         |         |
+|                   |    |         |         |
++-------------------+    |    1    |    2    |
+|                   |    |         |         |
+|                   |    |         |         |
+|         2         |    |         |         |
+|                   |    |         |         |
+|                   |    |         |         |
 +-------------------+    +-------------------+
 ```
 
